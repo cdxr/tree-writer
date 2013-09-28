@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Data.TreeWriter where
+module Control.Monad.TreeWriter where
 
 import Control.Applicative
 import Control.Monad
