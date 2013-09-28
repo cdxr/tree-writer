@@ -1,6 +1,17 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Control.Monad.TreeWriter where
+module Control.Monad.TreeWriter
+(
+    -- * The TreeWriter monad transformer
+    TreeWriter,
+    runTreeWriter,
+    execTreeWriter,
+    printTreeWriter,
+    -- * TreeWriter operations
+    leaf,
+    node,
+)
+where
 
 import Control.Applicative
 import Control.Monad
@@ -51,12 +62,16 @@ printTreeWriter m = do
 leaf :: (Monad m) => w -> TreeWriter w m ()
 leaf w = treeWriter ((), Node w [])
 
--- | @node w m@ is a computation that runs computation @m@ to retreive
--- a result @a@ and output @t@. It outputs a node with label @w@ and
+-- | @node w m@ is a computation that runs computation @m@ which produces
+-- the result @a@ and output @t@. It outputs a node with label @w@ and
 -- children @t@, and returns @a@ as its result.
 node :: (Monad m) => w -> TreeWriter w m a -> TreeWriter w m a
 node w (TreeWriter m) = TreeWriter $ censor (single . Node w . fromDList) m
 
+
+
+------------------------------------------------------------------------------
+-- DList
 
 
 -- | A simple difference list.
