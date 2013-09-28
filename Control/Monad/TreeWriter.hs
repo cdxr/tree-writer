@@ -13,26 +13,6 @@ import Data.Tree
 import Data.Monoid
 
 
--- | A simple difference list.
-newtype DList a = DList { runDList :: [a] -> [a] }
-
-instance Monoid (DList a) where
-    mempty = toDList []
-    DList f `mappend` DList g = DList (f . g)
-
--- | Convert a list to a DList.
-toDList :: [a] -> DList a
-toDList = DList . (++)
-
--- | Convert a DList to a list.
-fromDList :: DList a -> [a]
-fromDList d = runDList d []
-
--- | A DList consisting of a single item.
-single :: a -> DList a
-single = toDList . (:[])
-
-
 -- | @TreeWriter w@ is a specialized version of `WriterT` that outputs a
 -- @Forest w@.
 newtype TreeWriter w m a = TreeWriter (WriterT (DList (Tree w)) m a)
@@ -42,15 +22,16 @@ instance MonadTrans (TreeWriter w) where
     lift = TreeWriter . lift
 
 
--- Construct a `TreeWriter` computation from a @(result, output)@ pair.
+runTreeWriter :: (Monad m) => TreeWriter w m a -> m (a, Forest w)
+runTreeWriter (TreeWriter m) = second fromDList `liftM` runWriterT m
+
+
+-- | Construct a `TreeWriter` computation from a @(result, output)@ pair.
 --
 -- This is the inverse of `runTreeWriter`.
 treeWriter :: (Monad m) => (a, Tree w) -> TreeWriter w m a
 treeWriter (a, tw) = TreeWriter $ writer (a, single tw)
 
-
-runTreeWriter :: (Monad m) => TreeWriter w m a -> m (a, [Tree w])
-runTreeWriter (TreeWriter m) = second fromDList `liftM` runWriterT m
 
 -- | Extract the @Forest w@ output from a @TreeWriter w m a@.
 execTreeWriter :: (Monad m) => TreeWriter w m a -> m (Forest w)
@@ -75,5 +56,26 @@ leaf w = treeWriter ((), Node w [])
 -- children @t@, and returns @a@ as its result.
 node :: (Monad m) => w -> TreeWriter w m a -> TreeWriter w m a
 node w (TreeWriter m) = TreeWriter $ censor (single . Node w . fromDList) m
+
+
+
+-- | A simple difference list.
+newtype DList a = DList { runDList :: [a] -> [a] }
+
+instance Monoid (DList a) where
+    mempty = toDList []
+    DList f `mappend` DList g = DList (f . g)
+
+-- | Convert a list to a DList.
+toDList :: [a] -> DList a
+toDList = DList . (++)
+
+-- | Convert a DList to a list.
+fromDList :: DList a -> [a]
+fromDList d = runDList d []
+
+-- | A DList consisting of a single item.
+single :: a -> DList a
+single = toDList . (:[])
 
 
