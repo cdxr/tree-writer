@@ -1,6 +1,6 @@
 name:                tree-writer
 version:             0.1.0.0
--- synopsis:            
+synopsis:            A specialized WriterT monad transformer for constructing rose trees.
 -- description:         
 license:             BSD3
 license-file:        LICENSE
@@ -13,5 +13,4 @@ cabal-version:       >=1.8
 
 library
   exposed-modules:     Control.Monad.TreeWriter
-  -- other-modules:       
   build-depends:       base ==4.6.*, transformers ==0.3.*, containers ==0.5.*
